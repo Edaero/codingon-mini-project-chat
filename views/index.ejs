@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+      integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/index.css" />
+    <style></style>
+  </head>
+  <body>
+    <div class="user">
+      <form id="user_form">
+        닉네임 : <input type="text" name="id" id="user_id" />
+        <button id="user_btn" type="button" onclick="chatbox_in()">입장</button>
+      </form>
+    </div>
+    <div class="wrap">
+      <div class="main">
+        <div class="chat_box"><div id="text">채팅</div></div>
+        <div class="chat">
+          <form id="chat_form">
+            <input type="text" id="chat_input" />
+            <button id="chat_btn" type="button" onclick="chat_submit()">
+              전송
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="userlist">참여 유저</div>
+    </div>
+  </body>
+  <script>
+    const socket = io.connect();
+    const chat_box = document.querySelector(".chat_box");
+
+    // 유저 입장
+    const user_input = document.querySelector("#user_id");
+    const wrap = document.querySelector(".wrap");
+    function chatbox_in() {
+      const user_id = user_input.value;
+      console.log(user_input);
+      console.log(user_id);
+      wrap.style = "display:flex";
+    }
+
+    // 채팅 전송 my
+    const chat_input = document.querySelector("#chat_input");
+    function chat_submit() {
+      socket.emit("submit", chat_input.value);
+      const div = document.createElement("div");
+      div.innerText = "id : " + chat_input.value;
+      div.classList.add("myMsg");
+      chat_box.append(div);
+      console.log(chat_box.scrollHeight);
+      chat_box.scrollTo(0, chat_box.scrollHeight);
+    }
+    // 채팅 전송 another
+    socket.on("submit", (msg) => {
+      const div = document.createElement("div");
+      div.innerText = "id : " + msg;
+      div.classList.add("anotherMsg");
+      chat_box.append(div);
+    });
+  </script>
+</html>
