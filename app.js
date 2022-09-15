@@ -10,12 +10,29 @@ app.use("/static", express.static(__dirname + "/static"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+let user_list = [];
+
 io.on("connection", (socket) => {
   console.log("Server Socket Connected");
-  // io.emit("notice", `방가방가! ${soket.id}님이 대화에 입장하셨습니다.`);
+  // 채팅 참여
+  socket.on("userIn", (userId) => {
+    user_list.push(userId);
+    io.emit("noticeIn", userId);
+    console.log(user_list);
+  });
 
-  socket.on("submit", (msg) => {
-    socket.broadcast.emit("submit", msg);
+  socket.on("userOut", (userId) => {
+    const user_list_filtered = user_list.filter(
+      (element) => element !== userId
+    );
+    user_list = user_list_filtered;
+    io.emit("noticeOut", userId);
+    console.log(user_list_filtered);
+  });
+
+  // 메세지 전송
+  socket.on("sendMsg", (data) => {
+    io.emit("send", data);
   });
 });
 
