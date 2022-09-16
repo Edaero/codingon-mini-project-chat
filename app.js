@@ -10,29 +10,45 @@ app.use("/static", express.static(__dirname + "/static"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-let user_list = [];
+let user_list = {};
 
 io.on("connection", (socket) => {
-  console.log("Server Socket Connected");
   // 채팅 참여
   socket.on("userIn", (userId) => {
-    user_list.push(userId);
-    io.emit("noticeIn", userId);
-    console.log(user_list);
+    // 닉네임 중복 방지
+    // user_list의 값을 가져온다.
+    if (Object.values(user_list).indexOf(userId) > -1) {
+      socket.emit("idError", "이미 존재하는 사용자입니다.");
+    } else {
+      user_list[socket.id] = userId;
+      io.emit("noticeIn", user_list[socket.id]);
+      socket.emit("idSuccess", "채팅방 입장 !");
+      // 모든 유저를 보내줌
+      io.emit("allUserIn", user_list);
+    }
   });
 
-  socket.on("userOut", (userId) => {
-    const user_list_filtered = user_list.filter(
-      (element) => element !== userId
-    );
-    user_list = user_list_filtered;
-    io.emit("noticeOut", userId);
-    console.log(user_list_filtered);
+  // 나가기 버튼
+  socket.on("userOut", (id) => {
+    io.emit("noticeOut", id);
+    delete user_list[socket.id];
+  });
+
+  // 클라이언트 삭제 코드
+  socket.on("disconnect", () => {
+    io.emit("userDisconnect", user_list[socket.id]);
+    delete user_list[socket.id];
   });
 
   // 메세지 전송
   socket.on("sendMsg", (data) => {
     io.emit("send", data);
+    if (data.dm == "all") {
+      io.emit("send", data.msg);
+    } else {
+      io.to(data.dm).emit("send", data.msg);
+      socket.emit("send", data.msg);
+    }
   });
 });
 

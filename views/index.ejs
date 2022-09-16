@@ -16,8 +16,9 @@
     <div class="user">
       <!-- onsubmit="return false - 폼의 강제 전송을 막는다. -->
       <form id="user_form" onsubmit="return false">
-        닉네임 : <input type="text" name="id" id="user_id" />
+        닉네임 <input type="text" name="id" id="user_id" />
         <button id="user_btn" type="button" onclick="chatbox_in()">입장</button>
+        <div class="allUser"></div>
       </form>
       <button id="user_out" type="button" onclick="user_out()">나가기</button>
     </div>
@@ -33,12 +34,27 @@
           </form>
         </div>
       </div>
-      <div class="userlist"><div id="text">참여 유저</div></div>
+      <div class="userlist">
+        <div id="text">참여 유저</div>
+      </div>
     </div>
   </body>
   <script>
     const socket = io.connect();
     const chat_box = document.querySelector(".chat_box");
+
+    socket.on("allUserIn", (data) => {
+      const div = document.querySelector(".allUser");
+      div.innerHTML = `<div>현재 인원 : ${Object.values(data).length}명</div>`;
+
+      const allUser = document.createElement("div");
+      for (var i = 0; i < Object.values(data).length; i++) {
+        allUser.innerHTML = `<p>${
+          Object.values(data)[i]
+        }<button type="button" id="dmBtn" onclick="dm()">전송</button></p>`;
+      }
+      userlist.appendChild(allUser);
+    });
 
     // 유저 입장
     const user_input = document.querySelector("#user_id");
@@ -50,25 +66,35 @@
       const user_id = user_input.value;
       if (user_id.length == 0) {
         alert("닉네임을 입력해주세요.");
+        event.preventDefault();
       } else {
-        wrap.style = "display:flex";
         socket.emit("userIn", user_id);
-        user_input.setAttribute("readonly", "readonly");
-        user_input.style = "background-color:gray";
-        userBtn.style = "display: none";
-        userOutBtn.style = "display: block";
+        socketEvent1();
       }
     }
-    socket.on("noticeIn", (id) => {
-      var div = document.createElement("div");
-      div.innerText = `-- ${id} 님 입장 ! KINㄱㅓ운 ㅊH팅되ㅅㅔ요 ! !  --`;
-      div.classList.add("noticeIn");
-      chat_box.append(div);
-      const p = document.createElement("p");
-      p.innerText = id;
-      userlist.append(p);
-      chat_box.scrollTo(0, chat_box.scrollHeight);
+    socket.on("idError", (msg) => {
+      alert(msg);
+      wrap.style = "display:none";
     });
+    socket.on("idSuccess", (msg) => {
+      wrap.style = "display:flex";
+      alert(msg);
+      user_input.setAttribute("readonly", "readonly");
+      user_input.style = "background-color:gray";
+      userBtn.style = "display: none";
+      userOutBtn.style = "display: block";
+    });
+    // 입장이 된 이후에 쓰이는 이벤트
+    function socketEvent1() {
+      socket.on("noticeIn", (id) => {
+        const div = document.createElement("div");
+        div.innerText = `-- ${id} 님 입장 ! KINㄱㅓ운 ㅊH팅되ㅅㅔ요 ! !  --`;
+        div.classList.add("noticeIn");
+        chat_box.append(div);
+        chat_box.scrollTo(0, chat_box.scrollHeight);
+      });
+    }
+
     // 유저 나감
     function user_out() {
       const user_id = user_input.value;
@@ -85,27 +111,30 @@
       div.classList.add("noticeOut");
       chat_box.append(div);
 
-      for (let i = 1; i < userlist.childNodes.length; i++) {
-        if (userlist.childNodes[i].innerText == id) {
+      for (let i = 3; i < userlist.childNodes.length; i++) {
+        if (userlist.childNodes[i].innerText == id + "전송") {
           userlist.childNodes[i].remove();
         }
       }
       chat_box.scrollTo(0, chat_box.scrollHeight);
     });
-
-    // 새로고침 시 이벤트 실행
-    document.onkeydown = function (e) {
-      // F5, Ctrl+r, Ctrl+F5
-      if (e.keyCode == 116 || (e.ctrlKey == true && e.keyCode == 82)) {
-        user_out();
-        e.cancelBubble = true;
-        e.returnValue = false;
-        setTimeout(function () {
-          window.location.reload();
-        }, 100);
-        return false;
+    socket.on("userDisconnect", (id) => {
+      if (id == null) {
+        event.preventDefault();
+      } else {
+        var div = document.createElement("div");
+        div.innerText = `-- ${id} 님이 ㄴrㄱr셨습ㄴㅣㄷr ㅠ . ㅠ --`;
+        div.classList.add("noticeOut");
+        chat_box.append(div);
       }
-    };
+
+      for (let i = 3; i < userlist.childNodes.length; i++) {
+        if (userlist.childNodes[i].innerText == id + "전송") {
+          userlist.childNodes[i].remove();
+        }
+      }
+      chat_box.scrollTo(0, chat_box.scrollHeight);
+    });
 
     // 채팅 전송
     const chat_input = document.querySelector("#chat_input");
@@ -120,7 +149,6 @@
       }
       chat_box.scrollTo(0, chat_box.scrollHeight);
     }
-
     socket.on("send", (data) => {
       const user_id = user_input.value;
       var myMsg = chat_input.value;
@@ -136,5 +164,8 @@
       chat_box.append(div);
       chat_box.scrollTo(0, chat_box.scrollHeight);
     });
+    function userDm() {
+      var user = document.querySelector("");
+    }
   </script>
 </html>

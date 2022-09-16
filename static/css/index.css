@@ -57,6 +57,9 @@ body {
   width: 50px;
   color: black;
 }
+.user #user_form #user_btn .allUser {
+  margin-left: 10px;
+}
 .user #user_out {
   display: none;
   color: black;
@@ -83,6 +86,10 @@ body {
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
+}
+.userlist #dmBtn {
+  margin-left: 5px;
+  color: black;
 }
 .noticeIn {
   width: 80%;
