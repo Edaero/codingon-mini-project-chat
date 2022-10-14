@@ -35,26 +35,13 @@
         </div>
       </div>
       <div class="userlist">
-        <div id="text">참여 유저</div>
+        <div id="userText">참여 유저</div>
       </div>
     </div>
   </body>
   <script>
     const socket = io.connect();
     const chat_box = document.querySelector(".chat_box");
-
-    socket.on("allUserIn", (data) => {
-      const div = document.querySelector(".allUser");
-      div.innerHTML = `<div>현재 인원 : ${Object.values(data).length}명</div>`;
-
-      const allUser = document.createElement("div");
-      for (var i = 0; i < Object.values(data).length; i++) {
-        allUser.innerHTML = `<p>${
-          Object.values(data)[i]
-        }<button type="button" id="dmBtn" onclick="dm()">전송</button></p>`;
-      }
-      userlist.appendChild(allUser);
-    });
 
     // 유저 입장
     const user_input = document.querySelector("#user_id");
@@ -94,6 +81,28 @@
         chat_box.scrollTo(0, chat_box.scrollHeight);
       });
     }
+
+    socket.on("allUserIn", (data) => {
+      const div = document.querySelector(".allUser");
+      const userlist = document.querySelector(".userlist");
+      const user_id = user_input.value;
+      const allUser = document.createElement("div");
+
+      div.innerHTML = `<div>현재 인원 : ${Object.values(data).length}명</div>`;
+
+      for (var i = 0; i < Object.values(data).length; i++) {
+        if (user_id == Object.values(data)[i]) {
+          allUser.innerHTML = `<p>${Object.values(data)[i]}</p>`;
+        } else if (user_id != Object.values(data)[i]) {
+          allUser.innerHTML = `<p><span>${
+            Object.values(data)[i]
+          }</span><button class="dmBtn" type="button" id=${
+            Object.keys(data)[i]
+          } onclick="dm(this)">귓속말</button></p>`;
+        }
+        userlist.append(allUser);
+      }
+    });
 
     // 유저 나감
     function user_out() {
@@ -136,36 +145,73 @@
       chat_box.scrollTo(0, chat_box.scrollHeight);
     });
 
+    // DM 닉네임 추가 기능
+    function dm(e) {
+      const selectBtn = e;
+      const dmId = e.parentNode.firstChild.innerText;
+      const anotherBtn = e.parentNode.getElementsByClassName("dmbtn");
+      console.log(anotherBtn);
+      if (selectBtn.innerText == "귓속말") {
+        selectBtn.innerText = "끄기";
+        selectBtn.classList.add("dmOn");
+        chat_input.setAttribute("placeholder", dmId);
+      } else if (selectBtn.innerText == "끄기") {
+        selectBtn.innerText = "귓속말";
+        selectBtn.classList.remove("dmOn");
+        chat_input.removeAttribute("placeholder");
+      }
+      return e;
+    }
     // 채팅 전송
     const chat_input = document.querySelector("#chat_input");
+    var dmOn = userlist.getElementsByClassName("dmOn");
     function chat_submit() {
       const user_id = user_input.value;
+      var msgInput = chat_input;
       var myMsg = chat_input.value;
       if (myMsg.length == 0) {
         alert("채팅을 입력해주세요.");
         return false;
       } else {
-        socket.emit("sendMsg", { id: user_id, msg: myMsg });
+        if (dmOn[0] == undefined) {
+          socket.emit("sendMsg", {
+            id: user_id,
+            msg: myMsg,
+          });
+        } else if (dmOn[0].className == "dmBtn dmOn") {
+          var dm = dmOn[0].getAttribute("id");
+          socket.emit("sendMsg", {
+            id: user_id,
+            msg: myMsg,
+            dm: dm,
+          });
+        }
       }
+      myMsg.null;
       chat_box.scrollTo(0, chat_box.scrollHeight);
     }
     socket.on("send", (data) => {
+      console.log(data);
       const user_id = user_input.value;
+      var msgInput = chat_input;
       var myMsg = chat_input.value;
       var div = document.createElement("div");
-      if (myMsg.length != 0 && user_id == data.id && myMsg == data.msg) {
+      if (user_id == data.id) {
         // 채팅 전송 my
         div.classList.add("myMsg");
-      } else if (data.msg != 0 && user_id != data.id) {
+        console.log("1");
+      } else if (user_id != data.id) {
         // 채팅 전송 another
         div.classList.add("anotherMsg");
       }
-      div.innerHTML = `<div>[${data.id}] ${data.msg}</div>`;
+
+      if (data.dm) {
+        div.classList.add("directMsg");
+        div.textContent = data.dm;
+      }
+      div.innerHTML += `<div>[${data.id}] ${data.msg}</div>`;
       chat_box.append(div);
       chat_box.scrollTo(0, chat_box.scrollHeight);
     });
-    function userDm() {
-      var user = document.querySelector("");
-    }
   </script>
 </html>

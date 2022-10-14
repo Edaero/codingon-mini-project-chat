@@ -25,6 +25,23 @@ io.on("connection", (socket) => {
       socket.emit("idSuccess", "채팅방 입장 !");
       // 모든 유저를 보내줌
       io.emit("allUserIn", user_list);
+      console.log(user_list);
+    }
+  });
+
+  // 메세지 전송
+  socket.on("sendMsg", (data) => {
+    if (data.dm != null) {
+      const dmData = {
+        id: data.id,
+        msg: data.msg,
+        dm: "[귓속말]",
+      };
+      io.to(data.dm).emit("send", dmData);
+      socket.emit("send", dmData);
+    } else {
+      io.emit("send", data);
+      console.log(data);
     }
   });
 
@@ -38,17 +55,6 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     io.emit("userDisconnect", user_list[socket.id]);
     delete user_list[socket.id];
-  });
-
-  // 메세지 전송
-  socket.on("sendMsg", (data) => {
-    io.emit("send", data);
-    if (data.dm == "all") {
-      io.emit("send", data.msg);
-    } else {
-      io.to(data.dm).emit("send", data.msg);
-      socket.emit("send", data.msg);
-    }
   });
 });
 
