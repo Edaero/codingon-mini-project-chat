@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script
+      src="https://code.jquery.com/jquery-3.6.1.min.js"
+      integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
+      crossorigin="anonymous"
+    ></script>
+    <script
       src="https://cdn.socket.io/4.5.0/socket.io.min.js"
       integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
       crossorigin="anonymous"
@@ -59,6 +64,13 @@
         socketEvent1();
       }
     }
+    $(document).ready(function () {
+      $("#user_id").keydown(function (key) {
+        if (key.keyCode == 13) {
+          $("#user_btn").click();
+        }
+      });
+    });
     socket.on("idError", (msg) => {
       alert(msg);
       wrap.style = "display:none";
@@ -84,10 +96,9 @@
 
     socket.on("allUserIn", (data) => {
       const div = document.querySelector(".allUser");
-      const userlist = document.querySelector(".userlist");
       const user_id = user_input.value;
       const allUser = document.createElement("div");
-
+      console.log(Object.values(data).length);
       div.innerHTML = `<div>현재 인원 : ${Object.values(data).length}명</div>`;
 
       for (var i = 0; i < Object.values(data).length; i++) {
@@ -107,6 +118,12 @@
     // 유저 나감
     function user_out() {
       const user_id = user_input.value;
+      console.log(user_id);
+      for (let i = 3; i < userlist.childNodes.length; i++) {
+        if (userlist.childNodes[i].innerText == user_id) {
+          userlist.childNodes[i].remove(user_id);
+        }
+      }
       socket.emit("userOut", user_id);
       userBtn.style = "display: block";
       userOutBtn.style = "display: none";
@@ -115,19 +132,23 @@
       wrap.style = "display:none";
     }
     socket.on("noticeOut", (id) => {
+      const divUser = document.querySelector(".allUser");
       var div = document.createElement("div");
       div.innerText = `-- ${id} 님이 ㄴrㄱr셨습ㄴㅣㄷr ㅠ . ㅠ --`;
       div.classList.add("noticeOut");
       chat_box.append(div);
-
+      divUser.innerHTML = `<div>현재 인원 : ${
+        userlist.childNodes.length - 4
+      }명</div>`;
       for (let i = 3; i < userlist.childNodes.length; i++) {
-        if (userlist.childNodes[i].innerText == id + "전송") {
-          userlist.childNodes[i].remove();
+        if (userlist.childNodes[i].innerText == id + "귓속말") {
+          userlist.childNodes[i].remove(id);
         }
       }
       chat_box.scrollTo(0, chat_box.scrollHeight);
     });
     socket.on("userDisconnect", (id) => {
+      const divUser = document.querySelector(".allUser");
       if (id == null) {
         event.preventDefault();
       } else {
@@ -135,6 +156,9 @@
         div.innerText = `-- ${id} 님이 ㄴrㄱr셨습ㄴㅣㄷr ㅠ . ㅠ --`;
         div.classList.add("noticeOut");
         chat_box.append(div);
+        divUser.innerHTML = `<div>현재 인원 : ${
+          userlist.childNodes.length - 4
+        }명</div>`;
       }
 
       for (let i = 3; i < userlist.childNodes.length; i++) {
@@ -189,6 +213,7 @@
       }
       myMsg.null;
       chat_box.scrollTo(0, chat_box.scrollHeight);
+      $("#chat_input").val("");
     }
     socket.on("send", (data) => {
       console.log(data);
@@ -212,6 +237,15 @@
       div.innerHTML += `<div>[${data.id}] ${data.msg}</div>`;
       chat_box.append(div);
       chat_box.scrollTo(0, chat_box.scrollHeight);
+    });
+
+    $(document).ready(function () {
+      $("#chat_input").keydown(function (key) {
+        if (key.keyCode == 13) {
+          $("#chat_btn").click();
+          $("#chat_input").val("");
+        }
+      });
     });
   </script>
 </html>
