@@ -1,6 +1,6 @@
 ![image](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2Fe63dfabc-3ec8-44e9-a0dc-46b118eb693c%2FUntitled.png?table=block&id=8231027c-e4fd-4364-8523-f20980191403&spaceId=6e9ffcdf-452b-494c-a455-03f79451456b&width=1640&userId=b30b4534-c8a0-4959-9f96-2c49d1a62326&cache=v2)
-# MBTingI - E2I2
-- [KDT - 2차 프로젝트](https://joodeng.notion.site/joodeng/Joo-Young-Lee-61db50959426458db50275c985d2de2a?p=8231027ce4fd43648523f20980191403&pm=c)
+# 채팅 웹 - Socket
+- [KDT - 미니 프로젝트](https://joodeng.notion.site/joodeng/Joo-Young-Lee-61db50959426458db50275c985d2de2a?p=8231027ce4fd43648523f20980191403&pm=c)
 - 20220914 ~ 20220916
 - Use: HTML, CSS, JavaScript, Node.js, Socket.io
 ## 구현 기능
